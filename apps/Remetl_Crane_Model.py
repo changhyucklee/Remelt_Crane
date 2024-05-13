@@ -204,6 +204,7 @@ def get_crane_tbl(CASTEQPTID):
     df_tbl['COOLING_TIME'] = pd.to_datetime(df_tbl['COOLING_TIME'])
     df_tbl['INGOT_REMOVAL_TIME'] = pd.to_datetime(df_tbl['INGOT_REMOVAL_TIME'])
 
+
     return df_tbl
 
 def check_overlap(df1, df2):

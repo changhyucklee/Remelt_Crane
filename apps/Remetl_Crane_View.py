@@ -34,18 +34,21 @@ def setlayout():
     return html.Div([
         dbc.Card(
             dbc.CardBody([
+                # dbc.Row([
+                #     dbc.Col(
+                #         dcc.DatePickerRange(
+                #             id='my-date-picker-range',
+                #             min_date_allowed=date(1995, 8, 5),
+                #             max_date_allowed=date(2090, 12, 31),
+                #             start_date=firstday.strftime('%Y-%m-%d'),
+                #             end_date=todayDate.strftime('%Y-%m-%d'),
+                #             display_format="YYYY-MM-DD",
+                #             minimum_nights=0
+                #         ),
+                #     ),
+                # ]),
                 dbc.Row([
-                    dbc.Col(
-                        dcc.DatePickerRange(
-                            id='my-date-picker-range',
-                            min_date_allowed=date(1995, 8, 5),
-                            max_date_allowed=date(2090, 12, 31),
-                            start_date=firstday.strftime('%Y-%m-%d'),
-                            end_date=todayDate.strftime('%Y-%m-%d'),
-                            display_format="YYYY-MM-DD",
-                            minimum_nights=0
-                        ),
-                    ),
+                    dbc.Col([drawTable('Time_dc1')]), dbc.Col([drawTable('Time_dc2')])
                 ]),
                 dbc.Row([
                     dbc.Col([drawTable('tbl_dc1')]),
@@ -57,7 +60,7 @@ def setlayout():
         ),
         dcc.Interval(
             id='interval-component',
-            # interval=1000,  # Refresh interval in milliseconds
+            # interval=360000,  # Refresh interval in milliseconds
             interval=3600000,  # Refresh interval in milliseconds (1 hour)
             n_intervals=0
         )
@@ -115,6 +118,8 @@ def get_tbl(df):
 @app.callback(
     Output('tbl_dc1', 'children'),
     Output('tbl_dc2', 'children'),
+    Output('Time_dc1', 'children'),
+    Output('Time_dc2', 'children'),
     # Input('my-date-picker-range', 'start_date'),
     # Input('my-date-picker-range', 'end_date'),
     # Input('btnRefresh', 'children')
@@ -124,10 +129,17 @@ def get_tbl(df):
 def update_output(n):
     df1 = model.get_crane_tbl('YJ1RTCS1')
     df2 = model.get_crane_tbl('YJ1RTCS2')
+
+    dc1_Time = df1['CASTING_START_TIME'].min()
+    dc2_Time = df2['CASTING_START_TIME'].min()
     # DC1 와 DC2에서 COOLING_TIME ~ INGOT_REMOVAL_TIME 구간이 겹치는 지 여부 확인
     df_dc1 = model.check_overlap(df1, df2)
     tbl_dc1 = get_tbl(df_dc1)
     df_dc2 = model.check_overlap(df2, df1)
     tbl_dc2 = get_tbl(df_dc2)
 
-    return tbl_dc1,tbl_dc2
+    model.INS_yej_REMELT_CAST_CRANE(df_dc1)
+    model.INS_yej_REMELT_CAST_CRANE(df_dc2)
+
+
+    return tbl_dc1,tbl_dc2,dc1_Time,dc2_Time
